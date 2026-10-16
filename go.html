@@ -25,7 +25,7 @@
 // Bridge for the PapeX Notebook (it runs inside Claude, which can't open
 // sms: or ms-outlook:// links itself). Everything rides in the URL #fragment,
 // so the phone number and message are never sent to whatever server hosts this page.
-// Only three destinations are allowed (Messages, WhatsApp, Outlook), so this can't be used as an open redirect.
+// Only fixed destinations are allowed (Messages, WhatsApp, Outlook, the share sheet), so this can't be used as an open redirect.
 (function () {
   // Reused tab with a new #fragment: start fresh so the button never points at the previous contact.
   addEventListener("hashchange", function () { location.reload(); });
@@ -53,6 +53,26 @@
     if (wto) {
       url = "https://wa.me/" + wto + (wbody ? "?text=" + encodeURIComponent(wbody) : "");
       label = "Open WhatsApp";
+    }
+  } else if (app === "share") {
+    // Apple's share sheet needs a tap on this page, so show one big button.
+    var stext = (q.get("body") || "").slice(0, 8000), stitle = (q.get("title") || "").slice(0, 200);
+    if (stext) {
+      var m0 = document.getElementById("msg"), b0 = document.getElementById("go");
+      m0.textContent = "Ready to share";
+      b0.textContent = "Share"; b0.href = "#"; b0.hidden = false;
+      b0.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        var data = { text: stext }; if (stitle) data.title = stitle;
+        if (navigator.share) { navigator.share(data).then(function () { m0.textContent = "Shared. You can close this tab."; }).catch(function (e) { if (e && e.name === "AbortError") return; copyIt(); }); }
+        else copyIt();
+      });
+      function copyIt() {
+        var done = function () { m0.textContent = "Copied. Paste it wherever you want to send it."; };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(stext).then(done, function () { m0.textContent = "Couldn't open the share menu here."; });
+        else m0.textContent = "Couldn't open the share menu here.";
+      }
+      return;
     }
   } else if (app === "outlook") {
     url = "ms-outlook://";
