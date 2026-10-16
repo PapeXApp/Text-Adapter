@@ -44,19 +44,19 @@
   var url = null, label = "";
   if (app === "sms") {
     var to = (q.get("to") || "").replace(/[^\d+]/g, "").slice(0, 20);
-    var body = (q.get("body") || "").slice(0, 2000);
+    var body = (q.get("body") || "").slice(0, 20000);
     url = "sms:" + to + (body ? (ios ? "&" : "?") + "body=" + encodeURIComponent(body) : "");
     label = "Open Messages";
   } else if (app === "whatsapp") {
     var wto = (q.get("to") || "").replace(/[^\d]/g, "").slice(0, 20);
-    var wbody = (q.get("body") || "").slice(0, 2000);
+    var wbody = (q.get("body") || "").slice(0, 20000);
     if (wto) {
       url = "https://wa.me/" + wto + (wbody ? "?text=" + encodeURIComponent(wbody) : "");
       label = "Open WhatsApp";
     }
   } else if (app === "share") {
     // Apple's share sheet needs a tap on this page, so show one big button.
-    var stext = (q.get("body") || "").slice(0, 8000), stitle = (q.get("title") || "").slice(0, 200);
+    var stext = (q.get("body") || "").slice(0, 20000), stitle = (q.get("title") || "").slice(0, 200);
     if (stext) {
       var m0 = document.getElementById("msg"), b0 = document.getElementById("go");
       m0.textContent = "Ready to share";
