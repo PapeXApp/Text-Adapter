@@ -75,8 +75,21 @@
       return;
     }
   } else if (app === "outlook") {
-    url = "ms-outlook://";
-    label = "Open Outlook";
+    // With to/subject/body, open a filled-in compose in the Outlook app; with nothing, just open Outlook.
+    var oto = (q.get("to") || "").replace(/[^A-Za-z0-9.!#$%&'*+\/=?^_`{|}~@,;-]/g, "").slice(0, 500);
+    var osub = (q.get("subject") || "").slice(0, 500);
+    var obody = (q.get("body") || "").slice(0, 20000);
+    if (oto || osub || obody) {
+      var oq = [];
+      if (oto) oq.push("to=" + encodeURIComponent(oto));
+      if (osub) oq.push("subject=" + encodeURIComponent(osub));
+      if (obody) oq.push("body=" + encodeURIComponent(obody));
+      url = "ms-outlook://compose?" + oq.join("&");
+      label = "Open in Outlook";
+    } else {
+      url = "ms-outlook://";
+      label = "Open Outlook";
+    }
   }
   var msg = document.getElementById("msg"), go = document.getElementById("go"), hint = document.getElementById("hint");
   if (!url) { msg.textContent = "Nothing to open."; return; }
